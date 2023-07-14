@@ -11,6 +11,8 @@ struct MainScreen: View {
 
     @StateObject private var viewModel = MainScreen.ViewModel()
     @State private var isWarningSignShowing = false
+    @State private var messageAlert = ""
+    @State private var deleteElementIndex: Int?
     
     var body: some View {
         NavigationStack {
@@ -21,7 +23,7 @@ struct MainScreen: View {
                         .ignoresSafeArea()
                         .scaledToFill()
                     
-                    VStack {
+                    VStack(alignment: .center) {
                         ZStack {
                             Image("topBackground")
                                 .resizable()
@@ -41,13 +43,18 @@ struct MainScreen: View {
                                 .multilineTextAlignment(.center)
                                 .scaledToFit()
                                 .foregroundColor(.white)
+                                .position(x: geo.frame(in: .global).midX, y: geo.frame(in: .global).midY * 0.35)
                             Spacer()
                         } else {
-                            Text("Sign in at the registry.")
-                                .font(.custom("Montserrat-Medium", size: 18))
-                                .multilineTextAlignment(.center)
-                                .scaledToFit()
-                                .foregroundColor(.white)
+                            HStack {
+                                Text("Sign in at the registry.")
+                                    .font(.custom("Montserrat-Medium", size: 18))
+                                    .multilineTextAlignment(.leading)
+                                    .scaledToFit()
+                                    .foregroundColor(.white)
+                                    .padding([.leading, .bottom])
+                                Spacer()
+                            }
                             ScrollView {
                                 ForEach(viewModel.usersArray) { element in
                                     VStack {
@@ -59,14 +66,21 @@ struct MainScreen: View {
                                                 .foregroundColor(.white)
                                             
                                             Spacer()
-                                            Button {
-                                                
+                                            NavigationLink {
+                                                SignUp(id: element.id,
+                                                       name: element.name,
+                                                       phoneNumber: element.phoneNumber,
+                                                       email: element.email,
+                                                       emergencyNumber: element.emergencyNumber,
+                                                       emergencyContactName: element.emergencyContactName)
                                             } label: {
                                                 Image("editEdit")
                                             }
                                             .padding(.trailing)
                                             
                                             Button {
+                                                messageAlert = "Continue to delete \(element.name)?"
+                                                deleteElementIndex = viewModel.usersArray.firstIndex(of: element)!
                                                 isWarningSignShowing = true
                                             } label: {
                                                 Image("menuCloseBig")
@@ -75,11 +89,13 @@ struct MainScreen: View {
                                         .padding([.horizontal, .vertical], 9)
                                         
                                         Image("lineCopy8")
+                                            .resizable()
+                                            .frame(width: geo.frame(in: .local).width * 0.9)
                                     }
-                                    .alert("Continue to delete \(element.name)", isPresented: $isWarningSignShowing) {
+                                    .alert(messageAlert, isPresented: $isWarningSignShowing) {
                                         Button("Deny", role: .cancel) { }
                                         Button("Allow", role: .destructive) {
-                                            viewModel.deleteUser(element)
+                                            viewModel.deleteUser(at: deleteElementIndex!)
                                         }
                                     }
                                 }
@@ -87,7 +103,7 @@ struct MainScreen: View {
                             .frame(width: geo.frame(in: .local).width * 0.9, height: geo.frame(in: .local).height * 0.4)
                             
                         }
-                        Spacer()
+
                         
                         NavigationLink {
                             SignUp()
@@ -97,6 +113,7 @@ struct MainScreen: View {
                                 .frame(width: 183, height: 50)
                                 .scaledToFit()
                         }
+                        .buttonPosition(viewModel.usersArray.isEmpty, geo: geo)
                         Spacer()
                     }
                     .frame(maxWidth: geo.frame(in: .local).width, maxHeight: geo.size.height)
@@ -106,8 +123,6 @@ struct MainScreen: View {
             } // GeometryReader
             .onAppear {
                 viewModel.loadUsers()
-                print("Se esta presentando")
-                print(viewModel.usersArray)
             }
         }
     }

@@ -31,9 +31,9 @@ class Users: ObservableObject {
         return usersArray
     }
     
-    func removeUser(_ user: User) {
+    func removeUser(_ userIndex: Int) {
         // remove user
-        usersArray.removeAll { $0 == user }
+        usersArray.remove(at: userIndex)
         save()
     }
     
@@ -43,5 +43,34 @@ class Users: ObservableObject {
             UserDefaults.standard.set(encoded, forKey: saveKey)
         }
         print(usersArray)
+    }
+    
+    func checkIfUserExists(withID id: UUID) -> Bool {
+        for element in usersArray {
+            if element.id == id {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func getIndexOfUser(withID id: UUID) -> Int? {
+        var index = 0
+        for element in usersArray {
+            if element.id == id {
+                return index
+            }
+            index += 1
+        }
+        return nil
+    }
+    
+    func updateUser(withIndex index: Int, name: String, phoneNumber: String, email: String, emergencyNumber: String, emergencyContactName: String) {
+        usersArray[index].name = name
+        usersArray[index].phoneNumber = phoneNumber
+        usersArray[index].email = email
+        usersArray[index].emergencyNumber = emergencyNumber
+        usersArray[index].emergencyContactName = emergencyContactName
+        save()
     }
 }

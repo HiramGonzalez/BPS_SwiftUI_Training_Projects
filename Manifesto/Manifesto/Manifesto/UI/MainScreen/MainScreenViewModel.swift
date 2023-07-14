@@ -19,20 +19,16 @@ extension MainScreen {
 
         }
         
-        func propertyDidChange() {
-            print("entre a propertyDidChange")
-            loadUsers()
-        }
         
-        func deleteUser(_ user: User) {
-            users.removeUser(user)
+        func deleteUser(at index: Int) {
+            users.removeUser(index)
             loadUsers()
         }
         
         func loadUsers() {
             users = Users()
             usersArray = users.getUsers()
-            print("Se cargo")
+            print("It's loaded")
         }
         
         

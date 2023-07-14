@@ -9,14 +9,15 @@ import SwiftUI
 
 struct SignUp: View {
     @ObservedObject var keyboardHeightHelper = KeyboardHeightHelper()
-    @State private var name = ""
-    @State private var phoneNumber = ""
-    @State private var email = ""
-    @State private var emergencyNumber = ""
-    @State private var emergencyContactName = ""
     @StateObject private var viewModel = SignUp.ViewModel()
     @Environment(\.dismiss) var dismiss
     
+    var id: UUID?
+    @State var name: String = ""
+    @State var phoneNumber: String = ""
+    @State var email: String = ""
+    @State var emergencyNumber: String = ""
+    @State var emergencyContactName: String = ""
     
     var body: some View {
         GeometryReader { geo in
@@ -37,62 +38,107 @@ struct SignUp: View {
                             .aspectRatio(contentMode: .fit)
                         
                         ScrollView {
-                            VStack {
                                 GeometryReader { zGeo in
                                     ZStack {
                                         Image("whiteBackground")
                                             .resizable()
-                                            .frame(width: geo.frame(in: .global).width * 0.85, height: zGeo.frame(in: .local).height)
+                                            .frame(width: ingeo.frame(in: .global).width * 0.85, height: zGeo.frame(in: .local).height)
                                         
                                         
-                                        VStack(spacing: ingeo.frame(in: .local).height / 18) {
-                                            Group {
+                                        VStack(spacing: ingeo.frame(in: .local).height / 20) {
+                                            Spacer(minLength: 20)
+                                            VStack(spacing: 5) {
                                                 TextField("Full Name", text: $name)
-                                                TextField("Phone Number", text: $phoneNumber)
-                                                TextField("Email", text: $email)
-                                                TextField("Emergency Contact Number", text: $emergencyNumber)
-                                                TextField("Emergency Contact Name", text: $emergencyContactName)
+                                                    .textFieldStyle(geo: geo, strokeColor:  viewModel.isNameInvalid ? Color(red: 0.753, green: 0.0, blue: 0.0) : .black)
+                                                
+                                                if viewModel.isNameInvalid {
+                                                    Text("Must be 2-12 characters long and have no special characters.")
+                                                        .errorMessageStyle(geo: zGeo)
+                                                    
+                                                        
+                                                }
                                             }
-                                            .frame(width: geo.frame(in: .local).width * 0.7, height: geo.frame(in: .local).width * 0.1)
-                                            .padding(.all, 3)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 5)
-                                                    .stroke(.black, lineWidth: 1)
-                                            )
+                                            
+                                            VStack(spacing: 5) {
+                                                TextField("Phone Number", text: $phoneNumber)
+                                                    .textFieldStyle(geo: geo, strokeColor:  viewModel.isPhoneNumberInvalid ? Color(red: 0.753, green: 0.0, blue: 0.0) : .black)
+                                                    .keyboardType(.numberPad)
+                                                
+                                                if viewModel.isPhoneNumberInvalid {
+                                                    Text("Must enter 10 digit number.")
+                                                        .errorMessageStyle(geo: zGeo)
+                                                }
+                                            }
+                                            
+                                            
+                                            VStack(spacing: 5) {
+                                                TextField("Email", text: $email)
+                                                    .textFieldStyle(geo: geo, strokeColor:  viewModel.isEmailInvalid ? Color(red: 0.753, green: 0.0, blue: 0.0) : .black)
+                                                    .keyboardType(.emailAddress)
+                                                
+                                                if viewModel.isEmailInvalid {
+                                                    Text("We do not recognize that as an email. Try again.")
+                                                        .errorMessageStyle(geo: zGeo)
+                                                }
+                                            }
+                                            
+                                            
+                                            VStack(spacing: 5) {
+                                                TextField("Emergency Contact Number", text: $emergencyNumber)
+                                                    .textFieldStyle(geo: geo, strokeColor:  viewModel.isEmergencyNumberInvalid ? Color(red: 0.753, green: 0.0, blue: 0.0) : .black)
+                                                    .keyboardType(.numberPad)
+                                                
+                                                if viewModel.isEmergencyNumberInvalid {
+                                                    Text("Must enter 10 digit number.")
+                                                        .errorMessageStyle(geo: zGeo)
+                                                }
+                                            }
+                                            
+                                            
+                                            VStack(spacing: 5) {
+                                                TextField("Emergency Contact Name", text: $emergencyContactName)
+                                                    .textFieldStyle(geo: geo, strokeColor:  viewModel.isEmergencyContactNameInvalid ? Color(red: 0.753, green: 0.0, blue: 0.0) : .black)
+                                                
+                                                if viewModel.isEmergencyContactNameInvalid {
+                                                    Text("Must be 2-12 characters long and have no special characters.")
+                                                        .errorMessageStyle(geo: zGeo)
+                                                }
+                                            }
                                             
                                             Button {
-                                                viewModel.signUser(name: name, phoneNumber: phoneNumber, email: email, emergencyNumber: emergencyNumber, emergencyContactName: emergencyContactName)
-                                                dismiss()
+                                                viewModel.signUser(id: id ?? UUID() , name: name, phoneNumber: phoneNumber, email: email, emergencyNumber: emergencyNumber, emergencyContactName: emergencyContactName)
+                                                if viewModel.isFormValid { dismiss() }
                                             } label: {
                                                 Image("saveAndSignButton")
                                                     .resizable()
                                                     .frame(width: 183, height: 50)
                                                     .scaledToFit()
                                             }
+                                            Spacer(minLength: 20)
                                         } // VStack
-                                        .frame(height: ingeo.frame(in: .local).height * 0.8)
+                                        .frame(height: zGeo.frame(in: .local).height * 0.8)
                                         .position(x: zGeo.frame(in: .local).midX, y: zGeo.frame(in: .local).midY)
+                                        
                                     } // ZStack
-                                    .frame(height: ingeo.frame(in: .local).height * 0.8)
+                                    .frame(height: zGeo.frame(in: .local).height)
                                     .position(x: zGeo.frame(in: .local).midX, y: zGeo.frame(in: .local).midY)
                                     
                                 } // Geometry
-                                .frame(height: ingeo.frame(in: .local).height * 0.8)
+                                .frame(height: viewModel.isFormValid ? ingeo.frame(in: .local).height * 0.8 : geo.size.height > 700.0 ? ingeo.frame(in: .local).height : ingeo.frame(in: .local).height + 100)
+                                //.frame(height: viewModel.isFormValid ? ingeo.frame(in: .local).height * 0.8 : ingeo.frame(in: .local).height + 100)
                                 
                             
-                        } // Scroll
-                        
-                        Spacer()
-                        
-                        Image("hotels")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: geo.frame(in: .local).width, height: geo.frame(in: .global).height * 0.12)
+                            Spacer()
                             
-                        } // VStack
+                            Image("hotels")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: geo.frame(in: .local).width, height: geo.frame(in: .global).height * 0.12)
+                            
+                        } // Scroll
                         .padding(.bottom, self.keyboardHeightHelper.keyboardHeight > 0 ? self.keyboardHeightHelper.keyboardHeight - 33 : 0)
-                        //.offset(y: -self.keyboardHeightHelper.keyboardHeight)
-
+                        //.frame(maxHeight: .infinity)
+                        
                     } // VStack
                     .frame(maxHeight: ingeo.frame(in: .local).height)
                     .position(x: geo.frame(in: .local).midX, y: geo.frame(in: .local).midY)
